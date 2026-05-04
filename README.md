@@ -6,65 +6,83 @@
 
 A sophisticated Mastodon bot that discovers and shares charming cafes from around the world. It picks a random global city, finds a highly-rated cafe nearby via Google Places, generates accessible AI descriptions for images using Google Gemini, and posts a beautifully formatted status to Mastodon.
 
-This project is a modern **WASI P2 (WebAssembly System Interface Preview 2)** component, showcasing the power of sandboxed, cross-platform WebAssembly for cloud-native automation.
+Built as a modern **WASI P2 (WebAssembly System Interface Preview 2)** component, it demonstrates the power of sandboxed, cross-platform WebAssembly for cloud-native automation.
 
-## 🚀 How it Works
+## 🚀 Quick Start
 
-1.  **Global Search:** Selects a city from a curated database of 10,000+ locations, weighted by population and specific regions.
-2.  **Cafe Discovery:** Queries the Google Places API for "cafes" within a 50km radius, filtering for those with high ratings (3.0+) and significant review counts (100+).
-3.  **Visual Enrichment:** Fetches up to 4 high-quality photos of the selected cafe.
-4.  **AI Accessibility:** Uses the `gemini-1.5-flash` model to analyze the images and generate meaningful alt-text descriptions, ensuring the bot is accessible to everyone.
-5.  **Mastodon Dispatch:** Formats a post with the cafe name, address, star rating, and a Google Maps link, then uploads the images with their AI-generated alt-text.
-
-## 🛠 Prerequisites
-
--   **Rust:** Latest stable version.
--   **Wasmtime:** The recommended WASM runtime.
--   **cargo-component:** Required to build WASI P2 components.
+1.  **Clone the repository:**
     ```bash
-    cargo install cargo-component
+    git clone https://github.com/seungjin/mstd-random-cafe.git
+    cd mstd-random-cafe
     ```
--   **Just:** A handy task runner used for all build/run commands.
+
+2.  **Configure your environment:**
+    ```bash
+    cp sample.env .env
+    # Edit .env with your API keys and Mastodon details
+    ```
+
+3.  **Run the bot:**
+    ```bash
+    just run
+    ```
+
+## 🛠 Features
+
+-   **Global Reach:** Selects from 10,000+ cities in `src/geopoints.csv`, with configurable weighting for specific countries.
+-   **Smart Filtering:** Only selects cafes with a rating of 3.0+ and at least 100 reviews.
+-   **AI-Powered Accessibility:** Automatically generates alt-text for cafe photos using the `gemini-1.5-flash` model.
+-   **WASI P2 Architecture:** Fully compliant with the Component Model, utilizing `wasi-http` for all network requests.
+-   **Multi-Platform Deployment:** Runs anywhere Wasmtime is available, or as a tiny OCI container.
 
 ## ⚙️ Configuration
 
-The bot requires several environment variables to function. You can provide these in a `.env` file:
+The bot uses environment variables for configuration. Use the `sample.env` file as a template.
 
-| Variable | Description |
-| :--- | :--- |
-| `GOOGLE_API_KEY` | Your Google Cloud API key with Places and Gemini API access. |
-| `MSTDN_ACCESS_TOKEN` | Access token for your Mastodon bot account. |
-| `MSTDN_URI` | The domain of your Mastodon instance (e.g., `mastodon.social`). |
-| `GEMINI_API_KEY` | (Optional) Separate key for Gemini if different from `GOOGLE_API_KEY`. |
-| `GEMINI_API_KEY_API_URI` | (Optional) Custom API endpoint for Gemini. |
-| `WEIGHTED_COUNTRIES` | (Optional) Comma-separated list of ISO2 country codes to weight in selection. |
+| Variable | Required | Description |
+| :--- | :--- | :--- |
+| `MSTDN_URI` | **Yes** | The domain of your Mastodon instance (e.g., `mastodon.social`). |
+| `MSTDN_ACCESS_TOKEN` | **Yes** | Access token for your Mastodon bot account. |
+| `GOOGLE_API_KEY` | **Yes** | Google Cloud API key with Places and Gemini API access. |
+| `GEMINI_API_KEY` | No | Separate key for Gemini if different from `GOOGLE_API_KEY`. |
+| `GEMINI_API_KEY_API_URI` | No | Custom API endpoint for Gemini. |
+| `WEIGHTED_COUNTRIES` | No | Comma-separated ISO2 codes to weight (Default: `DE,GB,FR,ES,IT,TW,TH,VN,MX,PT,KR`). |
 
 ## 💻 Development
 
-The project uses `just` to simplify development workflows:
+The project uses `just` as a task runner:
 
--   **Build:** `just build` (targets `wasm32-wasip2`)
--   **Run:** `just run` (executes locally via `wasmtime`)
--   **Lint:** `cargo clippy` & `cargo fmt`
--   **Test:** `cargo test`
+-   `just build`: Build the WASM component (`debug`).
+-   `just build-release`: Build the WASM component (`release`).
+-   `just run`: Build and run the component using `wasmtime`.
+-   `just clean`: Remove build artifacts.
+
+For linting and testing:
+```bash
+cargo clippy
+cargo fmt
+cargo test
+```
+
+### Prerequisites
+-   **Rust**: Latest stable version.
+-   **cargo-component**: `cargo install cargo-component`
+-   **Wasmtime**: `brew install wasmtime` (or similar)
+-   **Just**: `brew install just` (or similar)
 
 ## 📦 Deployment
 
-### OCI / Docker
-Build a tiny, secure WASM-based container image:
+### Container (OCI)
+Build a minimal, secure container image:
 ```bash
-docker build -t mstd-random-cafe -f Containerfile .
+docker build -t mstd-random-cafe .
 ```
 
-### Systemd (Linux)
-To run the bot on a schedule (e.g., every hour), you can use the provided systemd units:
-
-1.  Copy `mstd-random-cafe.service` and `mstd-random-cafe.timer` to `/etc/systemd/system/`.
-2.  Update the `WorkingDirectory` and `ExecStart` paths in the service file.
-3.  Enable and start the timer:
-    ```bash
-    systemctl enable --now mstd-random-cafe.timer
-    ```
+### Systemd
+Automate the bot on a schedule (e.g., hourly) using the provided units:
+1.  Customize `mstd-random-cafe.service` with your project path.
+2.  `sudo cp mstd-random-cafe.* /etc/systemd/system/`
+3.  `sudo systemctl enable --now mstd-random-cafe.timer`
 
 ## 📄 License
 
