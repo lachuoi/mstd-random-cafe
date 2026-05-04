@@ -53,7 +53,9 @@ pub enum MyError {
 
 fn get_random_city(r: &mut Place, g: Vec<Geopoint>) -> Result<(), MyError> {
     let mut weighted_points: Vec<Geopoint> = Vec::new();
-    let weighted_countries = vec!["DE", "GB", "FR", "ES", "IT", "TW", "TH", "VN", "MX", "PT", "KR"];
+    let weighted_countries_env = env::var("WEIGHTED_COUNTRIES")
+        .unwrap_or_else(|_| "DE,GB,FR,ES,IT,TW,TH,VN,MX,PT,KR".to_string());
+    let weighted_countries: Vec<&str> = weighted_countries_env.split(',').collect();
 
     let mg = g
         .iter()

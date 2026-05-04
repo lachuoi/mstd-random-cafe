@@ -36,6 +36,8 @@ The bot requires several environment variables to function. You can provide thes
 | `MSTDN_ACCESS_TOKEN` | Access token for your Mastodon bot account. |
 | `MSTDN_URI` | The domain of your Mastodon instance (e.g., `mastodon.social`). |
 | `GEMINI_API_KEY` | (Optional) Separate key for Gemini if different from `GOOGLE_API_KEY`. |
+| `GEMINI_API_KEY_API_URI` | (Optional) Custom API endpoint for Gemini. |
+| `WEIGHTED_COUNTRIES` | (Optional) Comma-separated list of ISO2 country codes to weight in selection. |
 
 ## 💻 Development
 
