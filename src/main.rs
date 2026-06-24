@@ -204,6 +204,7 @@ async fn get_place_details(r: &mut Place) -> Result<(), MyError> {
         )
         .await
         .map_err(|e| MyError::AnyhowError(e))?;
+        println!("Downloaded photo {}/{} ({} bytes)", i + 1, n, data.len());
         r.pics_data.push(data);
     }
 
@@ -335,6 +336,7 @@ async fn upload_mstd_images(r: &mut Place) -> Result<(), MyError> {
     let mstdn_uri = env::var("MSTDN_URI").expect("MSTDN_URI not set");
 
     for (i, data) in r.pics_data.iter().enumerate() {
+        println!("Uploading image {}/{} ({} bytes) to Mastodon...", i + 1, r.pics_data.len(), data.len());
         let url = format!("https://{}/api/v2/media", mstdn_uri);
         let boundary = "---------------------------12345678901234567890";
         let alt_text = r
@@ -392,6 +394,7 @@ async fn upload_mstd_images(r: &mut Place) -> Result<(), MyError> {
 }
 
 async fn post_message(r: &Place) -> Result<(), MyError> {
+    println!("Posting status message to Mastodon...");
     let mstdn_uri = env::var("MSTDN_URI").expect("MSTDN_URI not set");
     let access_token =
         env::var("MSTDN_ACCESS_TOKEN").expect("MSTDN_ACCESS_TOKEN not set");

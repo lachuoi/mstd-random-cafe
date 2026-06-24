@@ -41,8 +41,17 @@ async fn http_request_recursive(
     };
 
     let request_headers = Fields::new();
+    let mut has_content_length = false;
     for (k, v) in &headers {
+        if k.eq_ignore_ascii_case("content-length") {
+            has_content_length = true;
+        }
         request_headers.set(k, &[v.clone()]).map_err(|_| anyhow::anyhow!("failed to set header {}", k))?;
+    }
+    if !has_content_length {
+        if let Some(ref b) = body {
+            request_headers.set(&"Content-Length".to_string(), &[b.len().to_string().into_bytes()]).map_err(|_| anyhow::anyhow!("failed to set Content-Length header"))?;
+        }
     }
 
     let path = parsed_url.path();
@@ -120,7 +129,15 @@ async fn http_request_recursive(
                         }
                     }
                 }
-                return Err(anyhow::anyhow!("HTTP status {}: {}", status, error_body));
+                
+                eprintln!("\n=== HTTP REQUEST FAILED ===");
+                eprintln!("Method: {:?}", method);
+                eprintln!("URL: {}", url);
+                eprintln!("Status Code: {}", status);
+                eprintln!("Response Body: {}", error_body);
+                eprintln!("===========================\n");
+
+                return Err(anyhow::anyhow!("HTTP request to {} failed with status {}: {}", url, status, error_body));
             }
 
             let body = response.consume().map_err(|_| anyhow::anyhow!("failed to consume response"))?;
