@@ -84,6 +84,14 @@ fn get_random_city(r: &mut Place, g: Vec<Geopoint>) -> Result<(), MyError> {
 
 async fn ask_to_google(r: &Place) -> Result<Vec<Value>> {
     let api_key = env::var("GOOGLE_API_KEY").expect("GOOGLE_API_KEY not set");
+    let excluded_types_env =
+        env::var("EXCLUDED_PLACE_TYPE").unwrap_or_else(|_| {
+            "hotel,lodge,gas_station,convenience_store,restaurant,bar"
+                .to_string()
+        });
+    let excluded_types: Vec<&str> =
+        excluded_types_env.split(',').map(str::trim).collect();
+
     let url = format!(
         "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location={},{}&radius=50000&type=cafe&keyword=coffee&key={}",
         r.lat, r.lng, api_key
@@ -99,18 +107,10 @@ async fn ask_to_google(r: &Place) -> Result<Vec<Value>> {
         for i in results {
             let types =
                 i["types"].as_array().map(|v| v.as_slice()).unwrap_or(&[]);
-            if types.iter().any(|t| {
-                let s = t.as_str().unwrap_or("");
-                matches!(
-                    s,
-                    "hotel"
-                        | "lodge"
-                        | "gas_station"
-                        | "convenience_store"
-                        | "restaurant"
-                        | "bar"
-                )
-            }) {
+            if types
+                .iter()
+                .any(|t| excluded_types.contains(&t.as_str().unwrap_or("")))
+            {
                 continue;
             }
             if i["rating"].as_f64().unwrap_or(0_f64) >= 3_f64

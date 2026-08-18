@@ -47,6 +47,7 @@ The bot uses environment variables for configuration. Use the `sample.env` file 
 | `GEMINI_API_KEY` | No | Separate key for Gemini if different from `GOOGLE_API_KEY`. |
 | `GEMINI_API_KEY_API_URI` | No | Custom API endpoint for Gemini. |
 | `WEIGHTED_COUNTRIES` | No | Comma-separated ISO2 codes to weight (Default: `DE,GB,FR,ES,IT,TW,TH,VN,MX,PT,KR`). |
+| `EXCLUDED_PLACE_TYPE` | No | Comma-separated Google Places types to exclude from selection (Default: `hotel,lodge,gas_station,convenience_store,restaurant,bar`). |
 
 ## 💻 Development
 
